@@ -199,10 +199,18 @@ function coupleHistory(){
       active.push({a:e.partnerA,b:e.partnerB,event:e.id});
     }
     if(e.type==='breakup'||e.type==='uncoupling'){
-      const ids=e.participants||[];
-      for(let i=active.length-1;i>=0;i--){const p=active[i];if(ids.includes(p.a)&&ids.includes(p.b)){
-        active.splice(i,1);p.endEvent=e.id;p.reason=e.description||`Separated at event #${e.id}.`;history.push(p);
-      }}
+      // A separation with an explicit pair only applies to that pair.
+      // Other participants may be the new partner or witnesses, not a breakup target.
+      const targetA=e.partnerA, targetB=e.partnerB;
+      for(let i=active.length-1;i>=0;i--){
+        const p=active[i];
+        const matches=targetA&&targetB
+          ? ((p.a===targetA&&p.b===targetB)||(p.a===targetB&&p.b===targetA))
+          : (e.participants||[]).length===2 && e.participants.includes(p.a) && e.participants.includes(p.b);
+        if(matches){
+          active.splice(i,1);p.endEvent=e.id;p.reason=e.description||`Separated at event #${e.id}.`;history.push(p);
+        }
+      }
     }
   }
   return {current:active,broken:history};
