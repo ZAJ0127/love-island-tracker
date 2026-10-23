@@ -108,7 +108,7 @@
 @media(max-width:620px){.connection-card{grid-template-columns:1fr;gap:8px}.connection-pair{justify-content:space-evenly}.connection-detail{border-top:1px solid #5d4258;padding-top:9px}.interaction-pair .interaction-person .avatar{width:88px;height:88px}.moment-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.moment-summary>div{padding:12px}.connection-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.connection-stats>button{padding:9px 3px}.connection-stats b{font-size:20px}.connection-stats small{font-size:9px}.interaction-card{padding:14px}.profile-tabs{top:0}.game-block-heading h3{font-size:23px}}
 .connection-stats>button{color:inherit;cursor:pointer;font:inherit;transition:border-color .18s,background .18s,transform .18s}.connection-stats>button:hover,.connection-stats>button:focus-visible,.connection-stats>button.active{border-color:#ffacc9;background:linear-gradient(140deg,#513149,#30213a)}.connection-stats>button.active{box-shadow:0 0 0 1px #ffacc970}.connection-stats>button:active{transform:scale(.98)}.connection-filter-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:5px 0 14px}.connection-filter-heading button{background:#38293c;color:#ffbed2;border:1px solid #76516d;border-radius:9px;padding:6px 12px}.connection-group{scroll-margin-top:90px}
 </style>
-</head><body>
+<style>.couple-switch{display:flex;gap:8px;margin:0 0 18px;flex-wrap:wrap}.couple-switch button{border:1px solid var(--line);border-radius:9px;padding:10px 15px;background:var(--card);color:var(--sub);font-weight:800}.couple-switch button.active{background:#63334e;border-color:#f6a4bb;color:#ffe0ea}.couple-card.broken{border-color:#6a5262;background:linear-gradient(120deg,#2d2531,#211c2b)}.couple-card.broken .heart-mini{filter:grayscale(.2)}.couple-card .couple-reason{font-size:12px;color:var(--sub);margin:14px 0 0}.event-people{display:flex;gap:10px;flex-wrap:wrap;margin:9px 0 12px}.event-person{border:1px solid #60495e;background:#2b2333;border-radius:10px;padding:7px;display:flex;flex-direction:column;align-items:center;gap:4px;max-width:95px;min-width:67px;color:#f5dfeb;font-size:10px;text-align:center}.event-person .avatar{width:47px;height:47px}.timeline-body{min-width:0;flex:1}.timeline-item{max-width:none}.couple-card .pair-person .avatar{width:75px;height:75px}@media(max-width:620px){.event-people{gap:6px}.event-person{min-width:59px;padding:5px}.event-person .avatar{width:40px;height:40px}}</style></head><body>
 <div class="app">
 <header class="header"><div class="brand"><span class="heart">♥</span><div><b>LOVE ISLAND</b><small>CHARACTER & EVENT TRACKER</small></div></div><div class="head-right"><span id="syncStatus">Loading…</span><button id="refresh" class="reload" aria-label="Refresh">↻</button></div></header>
 <section class="hero"><div><span class="eyebrow">● WEEK ONE · CEREMONY ONE</span><h1>Everyone has<br><em>a story.</em></h1><p>Your cast, connections, and every moment in one place.</p></div><div class="hero-badge"><small>IN THE VILLA</small><b>20</b><span>Islanders + 1 host</span></div></section>
@@ -117,7 +117,7 @@
 <main>
 <section id="characters" class="view active"><aside class="roster card"><div class="roster-title"><h2>The cast</h2><small id="visibleCount"></small></div><input id="search" class="search" type="search" aria-label="Search characters" placeholder="Search characters…"><div class="filters"><button class="active" data-group="all">All</button><button data-group="girls">Girls</button><button data-group="boys">Boys</button><button data-group="host">Host</button></div><div id="rosterList" class="roster-list"></div></aside><article id="profile" class="profile"></article></section>
 <section id="timeline" class="view"><div class="section-title"><div><span class="eyebrow">LATEST EVENTS FIRST</span><h2>What happened</h2><p>Most recent events appear first.</p></div><select id="eventFilter"><option value="all">All events</option><option value="entrance">Entrances</option><option value="coupling">Couplings</option><option value="intimacy">Intimacy</option><option value="touching">Other contact</option><option value="interest">Interest</option><option value="kiss">Kisses</option><option value="oral">Oral</option><option value="stripping">Undressing</option><option value="game">Games</option><option value="activity">Activities</option></select></div><div id="timelineList"></div></section>
-<section id="couples" class="view"><div class="section-title"><div><span class="eyebrow">FIRST COUPLING CEREMONY</span><h2>Current couples</h2><p>Confirmed selections only.</p></div></div><div id="couplesList" class="couples-grid"></div><div class="note"><b>Pending decision</b><p>Nico Robin hasn't chosen a partner yet. Leo remains single. Midnight is the host.</p></div></section>
+<section id="couples" class="view"><div class="section-title"><div><span class="eyebrow">FIRST COUPLING CEREMONY</span><h2>Couple history</h2><p>Every confirmed pairing, including couples broken by recoupling.</p></div></div><div class="couple-switch" role="group" aria-label="Couple status"><button type="button" data-couple-tab="current" class="active">♥ Current <span id="currentCoupleCount"></span></button><button type="button" data-couple-tab="broken">💔 Broken / Recoupled <span id="brokenCoupleCount"></span></button></div><div id="couplesList" class="couples-grid"></div><div class="note"><b>Pending decision</b><p>Nico Robin hasn't chosen a partner yet. Leo remains single. Midnight is the host.</p></div></section>
 
 
 <section class="view" id="intimacy" aria-label="Villa intimacy and physical interactions">
@@ -187,7 +187,28 @@ const initials=name=>name.split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperC
 const singularCount=n=>n===1?'event':'events';
 function toast(text){const t=$('toast');t.textContent=text;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2300)}
 function normalizeID(text){const value=String(text??'').trim().toLowerCase();if(!value)return '';const p=state.characters.find(c=>c.id.toLowerCase()===value||c.name.toLowerCase()===value||(c.aliases||[]).some(a=>a.toLowerCase()===value));return p?.id||value;}
-function couples(){const pairs=[];for(const e of state.events){if(e.type==='coupling'&&e.partnerA&&e.partnerB){for(let i=pairs.length-1;i>=0;i--)if([e.partnerA,e.partnerB].includes(pairs[i].a)||[e.partnerA,e.partnerB].includes(pairs[i].b))pairs.splice(i,1);pairs.push({a:e.partnerA,b:e.partnerB,event:e.id});}if(e.type==='breakup')for(let i=pairs.length-1;i>=0;i--)if((e.participants||[]).includes(pairs[i].a)||(e.participants||[]).includes(pairs[i].b))pairs.splice(i,1);}return pairs;}
+function coupleHistory(){
+  const active=[],history=[];
+  for(const e of [...state.events].sort((a,b)=>a.id-b.id)){
+    if(e.type==='coupling'&&e.partnerA&&e.partnerB){
+      for(let i=active.length-1;i>=0;i--){
+        const p=active[i];if([e.partnerA,e.partnerB].includes(p.a)||[e.partnerA,e.partnerB].includes(p.b)){
+          active.splice(i,1);p.endEvent=e.id;p.reason=`Recoupled at event #${e.id}: ${display(e.partnerA)} chose ${display(e.partnerB)}.`;history.push(p);
+        }
+      }
+      active.push({a:e.partnerA,b:e.partnerB,event:e.id});
+    }
+    if(e.type==='breakup'||e.type==='uncoupling'){
+      const ids=e.participants||[];
+      for(let i=active.length-1;i>=0;i--){const p=active[i];if(ids.includes(p.a)&&ids.includes(p.b)){
+        active.splice(i,1);p.endEvent=e.id;p.reason=e.description||`Separated at event #${e.id}.`;history.push(p);
+      }}
+    }
+  }
+  return {current:active,broken:history};
+}
+function couples(){return coupleHistory().current;}
+let coupleTab='current';
 function eventsFor(id){return state.events.filter(e=>e.participants.includes(id));}
 function avatar(c,large=false){
   const cls=large?'portrait':'avatar';
@@ -667,8 +688,24 @@ function renderGames(){
   $('gamesList').innerHTML=[...grouped.entries()].reverse().map(([title,events])=>`<section class="game-block"><div class="game-block-heading"><div><span class="eyebrow">GAME / ACTIVITY</span><h3>${escapeHtml(title)}</h3><p>${events.length} recorded ${events.length===1?'interaction':'interactions'}</p></div><span class="game-icon" aria-hidden="true">🎲</span></div><div class="interaction-grid">${events.map(e=>interactionCard(e)).join('')}</div></section>`).join('');
 }
 
-function renderTimeline(){const type=$('eventFilter').value;const list=state.events.filter(e=>type==='all'||e.type===type||(type==='kiss'&&intimacyKind(e)==='kiss')||(type==='oral'&&intimacyKind(e)==='oral')||(type==='stripping'&&intimacyKind(e)==='undress')).sort((a,b)=>b.id-a.id);$('timelineList').innerHTML=list.length?list.map(e=>`<article class="timeline-item"><div class="timeline-number">${e.id}</div><div><div class="event-type">${escapeHtml(prettyType[e.type]||e.type)} · WEEK ${e.week} / CEREMONY ${e.ceremony}</div><h3>${escapeHtml(e.description)}</h3><div class="timeline-tags">${e.participants.map(id=>`<button data-person="${escapeHtml(id)}">${escapeHtml(display(id))}</button>`).join('')}</div></div></article>`).join(''):'<p class="muted">No events match this filter.</p>';}
-function renderCouples(){const pairs=couples();$('couplesList').innerHTML=pairs.length?pairs.map((p,i)=>`<div class="couple-card"><small>COUPLE ${i+1} · CEREMONY EVENT #${p.event}</small><div class="pair"><div class="pair-person">${avatar(person(p.a))}<b>${escapeHtml(display(p.a))}</b></div><span class="heart-mini">♥</span><div class="pair-person">${avatar(person(p.b))}<b>${escapeHtml(display(p.b))}</b></div></div></div>`).join(''):'<p class="muted">No confirmed couples yet.</p>';const pending=[];if(!pairs.some(p=>[p.a,p.b].includes('nico')))pending.push("Nico Robin's selection is pending");if(!pairs.some(p=>[p.a,p.b].includes('leo')))pending.push('Leo is currently single');const note=document.querySelector('#couples .note');note.innerHTML=`<b>${pending.length?'Pending decisions':'Ceremony status'}</b><p>${escapeHtml(pending.length?pending.join('. ')+'. ':'No open Nico/Leo coupling notes. ')}Midnight is the host, not a contestant.</p>`;}
+function renderTimeline(){
+  const type=$('eventFilter').value;
+  const list=state.events.filter(e=>type==='all'||e.type===type||(type==='kiss'&&intimacyKind(e)==='kiss')||(type==='oral'&&intimacyKind(e)==='oral')||(type==='stripping'&&intimacyKind(e)==='undress')).sort((a,b)=>b.id-a.id);
+  $('timelineList').innerHTML=list.length?list.map(e=>{
+    const people=[...new Set(e.participants||[])].map(id=>`<button type="button" class="event-person" data-person="${escapeHtml(id)}">${avatar(person(id))}<span>${escapeHtml(display(id))}</span></button>`).join('');
+    return `<article class="timeline-item"><div class="timeline-number">${e.id}</div><div class="timeline-body"><div class="event-type">${escapeHtml(prettyType[e.type]||e.type)} · WEEK ${e.week} / CEREMONY ${e.ceremony}</div><h3>${escapeHtml(e.description)}</h3><div class="event-people">${people}</div></div></article>`;
+  }).join(''):'<p class="muted">No events match this filter.</p>';
+}
+function renderCouples(){
+  const all=coupleHistory(),pairs=all[coupleTab];
+  const currentCount=$('currentCoupleCount'),brokenCount=$('brokenCoupleCount');
+  if(currentCount)currentCount.textContent=`(${all.current.length})`;
+  if(brokenCount)brokenCount.textContent=`(${all.broken.length})`;
+  document.querySelectorAll('[data-couple-tab]').forEach(b=>{const selected=b.dataset.coupleTab===coupleTab;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',String(selected));});
+  $('couplesList').innerHTML=pairs.length?pairs.map((p,i)=>`<div class="couple-card ${coupleTab==='broken'?'broken':''}"><small>${coupleTab==='broken'?'BROKEN / RECOUPLED':'CURRENT COUPLE'} · FORMED AT EVENT #${p.event}</small><div class="pair"><div class="pair-person">${avatar(person(p.a))}<b>${escapeHtml(display(p.a))}</b></div><span class="heart-mini">${coupleTab==='broken'?'💔':'♥'}</span><div class="pair-person">${avatar(person(p.b))}<b>${escapeHtml(display(p.b))}</b></div></div>${p.reason?`<p class="couple-reason">${escapeHtml(p.reason)}</p>`:''}</div>`).join(''):`<p class="muted">No ${coupleTab==='broken'?'broken couples':'current couples'} recorded.</p>`;
+  const note=document.querySelector('#couples .note');
+  if(note)note.innerHTML='<b>Coupling history</b><p>Current pairs and broken / recoupled pairs are derived from the event log. When someone chooses an already-coupled partner, the former couple moves to Broken / Recoupled automatically. Midnight is the host.</p>';
+}
 function renderAll(){stats();renderRoster();renderProfile();renderTimeline();renderCouples();renderIntimacy();renderGames();renderSource();renderPictureStudio();}
 function renderSource(){const status=$('syncStatus');status.textContent=state.live?'● Live Google Sheet':state.loading?'● Connecting…':'● Built-in snapshot';status.classList.toggle('live',state.live);$('sourceInfo').innerHTML=state.live?'<b>Connected to a live sheet</b><p>Events loaded from Google Sheets. Refresh to get newly added events.</p>':state.sheetId?'<b>Live sheet not available</b><p>Showing the built-in snapshot. Check public view access, the Events tab, and column headings.</p>':'<b>Using built-in snapshot</b><p>Showing nine confirmed events until a live sheet is connected.</p>';}
 function validSheetID(raw){const s=String(raw||'').trim();const match=s.match(/\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);const id=match?.[1]||s;return /^[A-Za-z0-9_-]{15,}$/.test(id)?id:null;}
@@ -700,6 +737,7 @@ async function load(){try{const files=window.__LI_DATA__?[window.__LI_DATA__.cha
 }
 // Global event handlers are used for dynamically rendered profile and timeline buttons.
 document.addEventListener('click',e=>{
+  const ct=e.target.closest('[data-couple-tab]');if(ct){coupleTab=ct.dataset.coupleTab;renderCouples();return;}
   const conn=e.target.closest('[data-connection-filter]');if(conn){state.connectionFilter=conn.dataset.connectionFilter;renderProfile();return;}
   const profileTab=e.target.closest('[data-profile-tab]');if(profileTab){state.profileTab=profileTab.dataset.profileTab;renderProfile();return;}
   const intimacyFilter=e.target.closest('[data-intimacy-filter]');if(intimacyFilter){state.intimacyFilter=intimacyFilter.dataset.intimacyFilter;renderIntimacy();return;}
